@@ -1,0 +1,2 @@
+# KAZILINK-mtaani
+NGO
