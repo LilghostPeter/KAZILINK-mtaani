@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KaziLink Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg:#f7f8fc;--white:#ffffff;--text:#1a1a2e;--muted:#7a7a9a;
+  --accent1:#0057ff;--accent2:#ff2d55;--accent3:#f97316;--accent4:#7c3aed;--accent5:#059669;
+  --border:#e8e8f0;--card:#ffffff;--shadow:0 4px 24px rgba(0,0,0,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:999;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:white;border-radius:24px;padding:36px 32px;width:100%;max-width:460px;box-shadow:0 24px 80px rgba(0,0,0,.18);position:relative;animation:modalIn .3s ease;max-height:90vh;overflow-y:auto;}
+@keyframes modalIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;}
+.modal-logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--accent1);text-align:center;margin-bottom:4px;}
+.modal-logo span{color:var(--accent2);}
+.modal-sub{text-align:center;font-size:13px;color:var(--muted);margin-bottom:22px;}
+.auth-tabs{display:flex;margin-bottom:22px;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+.auth-tab{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;background:var(--bg);color:var(--muted);border:none;font-family:'DM Sans',sans-serif;transition:.2s;}
+.auth-tab.active{background:var(--accent1);color:white;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase;}
+.form-group input,.form-group select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s;}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent1);background:white;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.auth-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent1),#0040cc);color:white;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:.2s;margin-top:4px;}
+.auth-btn:hover{opacity:.92;transform:translateY(-1px);}
+.social-divider{text-align:center;margin:16px 0;color:var(--muted);font-size:13px;position:relative;}
+.social-divider::before,.social-divider::after{content:'';position:absolute;top:50%;width:38%;height:1px;background:var(--border);}
+.social-divider::before{left:0;}.social-divider::after{right:0;}
+.social-btns{display:flex;gap:10px;}
+.social-btn{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:12px;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text);transition:.2s;}
+.social-btn:hover{border-color:var(--accent1);}
+
+/* SUBSCRIPTION MODAL */
+.sub-plans{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0;}
+.sub-plan{border:2px solid var(--border);border-radius:16px;padding:18px 14px;cursor:pointer;transition:.2s;text-align:center;position:relative;}
+.sub-plan:hover,.sub-plan.selected{border-color:var(--accent1);background:#f0f5ff;}
+.sub-plan.popular::before{content:'POPULAR';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent1);color:white;font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:1px;}
+.sub-plan h3{font-size:16px;font-weight:700;margin-bottom:4px;}
+.sub-plan .plan-price{font-size:20px;font-weight:700;color:var(--accent1);}
+.sub-plan .plan-price span{font-size:12px;color:var(--muted);font-weight:400;}
+.sub-plan ul{list-style:none;margin-top:10px;text-align:left;}
+.sub-plan ul li{font-size:12px;color:var(--muted);padding:3px 0;}
+.sub-plan ul li::before{content:'✓ ';color:var(--accent5);font-weight:700;}
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+.pay-method{border:1.5px solid var(--border);border-radius:12px;padding:11px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;transition:.2s;}
+.pay-method:hover,.pay-method.selected{border-color:var(--accent5);background:#f0fdf4;}
+.pay-method i{font-size:17px;}
+
+/* USER DROPDOWN */
+.user-menu{position:relative;}
+.user-dropdown{display:none;position:absolute;top:46px;right:0;background:white;border-radius:16px;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.12);min-width:220px;padding:8px;z-index:500;}
+.user-dropdown.open{display:block;animation:modalIn .2s ease;}
+.dropdown-header{padding:12px 14px 10px;border-bottom:1px solid var(--border);margin-bottom:6px;}
+.dropdown-header strong{display:block;font-size:14px;}
+.dropdown-header span{font-size:12px;color:var(--muted);}
+.sub-badge{display:inline-block;background:linear-gradient(135deg,var(--accent4),#2563eb);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:3px;}
+.dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;cursor:pointer;font-size:14px;color:var(--text);transition:.15s;}
+.dropdown-item:hover{background:var(--bg);}
+.dropdown-item i{width:16px;color:var(--muted);}
+.dropdown-item.danger{color:var(--accent2);}
+.dropdown-item.danger i{color:var(--accent2);}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:60px;}
+.logo{font-family:'Playfair Display',serif;font-size:22px;color:var(--accent1);letter-spacing:-.5px;}
+.logo span{color:var(--accent2);}
+.search-bar{display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:30px;padding:8px 16px;gap:8px;width:280px;}
+.search-bar input{border:none;background:transparent;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;width:100%;color:var(--text);}
+.search-bar i{color:var(--muted);font-size:13px;}
+.topbar-actions{display:flex;gap:8px;align-items:center;}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:700;cursor:pointer;}
+.login-topbar-btn{padding:8px 18px;background:var(--accent1);color:white;border:none;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;}
+.login-topbar-btn:hover{background:#0040cc;}
+.notif-btn{width:36px;height:36px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;color:var(--muted);}
+.badge{position:absolute;top:-2px;right:-2px;width:14px;height:14px;background:var(--accent2);border-radius:50%;font-size:9px;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;}
+
+/* TAB NAV */
+.tab-nav{display:flex;border-bottom:1px solid var(--border);background:var(--white);padding:0 24px;gap:4px;overflow-x:auto;}
+.tab-btn{padding:14px 17px;background:none;border:none;border-bottom:2px solid transparent;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:7px;}
+.tab-btn.active{color:var(--accent1);border-bottom-color:var(--accent1);}
+.tab-btn.active.talent-tab{color:var(--accent2);border-bottom-color:var(--accent2);}
+.tab-btn.active.jumia{color:var(--accent3);border-bottom-color:var(--accent3);}
+.tab-btn.active.scholar-tab{color:var(--accent4);border-bottom-color:var(--accent4);}
+.tab-btn.active.live-tab{color:#e11d48;border-bottom-color:#e11d48;}
+.tab-btn:hover{color:var(--text);}
+.live-dot{width:8px;height:8px;background:#e11d48;border-radius:50%;display:inline-block;animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.3)}}
+
+/* CONTENT */
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* NETWORK */
+.ln-layout{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:260px 1fr 280px;gap:20px;padding:24px 16px;}
+.card{background:var(--card);border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;}
+.profile-card{padding:0;}
+.profile-banner{height:70px;background:linear-gradient(135deg,var(--accent1),#00c6ff);}
+.profile-info{padding:0 16px 16px;text-align:center;margin-top:-28px;}
+.profile-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent3));margin:0 auto 8px;border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white;}
+.profile-info h3{font-size:15px;font-weight:700;}
+.profile-info p{font-size:12px;color:var(--muted);margin-top:2px;}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border);margin-top:12px;}
+.stat{padding:10px;text-align:center;}
+.stat strong{display:block;font-size:16px;font-weight:700;color:var(--accent1);}
+.stat span{font-size:11px;color:var(--muted);}
+.feed{display:flex;flex-direction:column;gap:16px;}
+.post-card{padding:20px;}
+.post-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.post-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:15px;flex-shrink:0;}
+.post-meta h4{font-size:14px;font-weight:600;}
+.post-meta span{font-size:12px;color:var(--muted);}
+.post-text{font-size:14px;line-height:1.6;color:#333;}
+.post-image{width:100%;height:180px;background:linear-gradient(135deg,#e8f0ff,#f0e8ff);border-radius:12px;margin-top:12px;display:flex;align-items:center;justify-content:center;font-size:40px;}
+.post-actions{display:flex;gap:16px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.action-btn{background:none;border:none;display:flex;align-items:center;gap:5px;color:var(--muted);font-size:13px;cursor:pointer;padding:6px 10px;border-radius:8px;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.action-btn:hover{background:var(--bg);color:var(--accent1);}
+.job-card{padding:16px;display:flex;gap:12px;align-items:flex-start;}
+.job-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.job-info h4{font-size:14px;font-weight:600;}
+.job-info p{font-size:12px;color:var(--muted);margin-top:2px;}
+.job-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.tag{font-size:11px;padding:3px 10px;border-radius:20px;background:#eef2ff;color:var(--accent1);font-weight:500;}
+.tag.green{background:#edfdf4;color:#16a34a;}
+.tag.purple{background:#f5f3ff;color:var(--accent4);}
+.apply-btn{margin-top:10px;padding:7px 16px;background:var(--accent1);color:white;border:none;border-radius:20px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;transition:.2s;}
+.apply-btn:hover{background:#0040cc;}
+.sub-lock{background:linear-gradient(135deg,#f0f5ff,#fdf4ff);border:1.5px dashed var(--accent1);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+.sub-lock i{font-size:26px;color:var(--accent1);flex-shrink:0;}
+.sub-lock h4{font-size:13px;font-weight:700;margin-bottom:2px;}
+.sub-lock p{font-size:12px;color:var(--muted);}
+.sub-lock-btn{margin-left:auto;padding:8px 16px;background:var(--accent1);color:white;border:none;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.2s;}
+.sub-lock-btn:hover{background:#0040cc;}
+
+/* TALENT — TikTok style */
+.tt-layout{display:flex;height:calc(100vh - 112px);background:#000;overflow:hidden;}
+.tt-sidebar{width:210px;background:#111;padding:18px 12px;display:flex;flex-direction:column;gap:4px;overflow-y:auto;flex-shrink:0;}
+.tt-sidebar-title{color:#555;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 8px 4px;}
+.tt-side-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;color:#bbb;font-size:13px;font-weight:500;transition:.2s;}
+.tt-side-item:hover,.tt-side-item.active{background:rgba(255,255,255,.1);color:white;}
+.tt-side-item i{width:16px;text-align:center;color:var(--accent2);}
+.tt-trending{background:rgba(255,45,85,.07);border:1px solid rgba(255,45,85,.18);border-radius:10px;padding:10px;margin-top:10px;}
+.tt-trending-title{color:var(--accent2);font-size:11px;font-weight:700;margin-bottom:8px;}
+.tt-trend-tag{font-size:12px;color:#999;padding:3px 0;cursor:pointer;}
+.tt-trend-tag:hover{color:white;}
+.tt-feed{flex:1;overflow-y:scroll;scroll-snap-type:y mandatory;position:relative;}
+.tt-feed::-webkit-scrollbar{display:none;}
+.tt-video-wrap{height:calc(100vh - 112px);scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.tt-video-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:100px;}
+.tt-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 50%);}
+.tt-actions{position:absolute;right:16px;bottom:120px;display:flex;flex-direction:column;gap:20px;align-items:center;z-index:2;}
+.tt-action-btn{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;}
+.tt-action-btn .icon{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;font-size:18px;color:white;transition:.2s;}
+.tt-action-btn .icon:hover{background:rgba(255,255,255,.28);transform:scale(1.1);}
+.tt-action-btn .icon.liked{background:var(--accent2);}
+.tt-action-btn span{font-size:11px;color:white;font-weight:600;}
+.tt-info-bottom{position:absolute;bottom:20px;left:20px;right:80px;z-index:2;}
+.tt-user{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.tt-user-avatar{width:40px;height:40px;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:14px;flex-shrink:0;}
+.tt-user strong{color:white;font-size:14px;display:block;}
+.tt-user span{color:#ddd;font-size:12px;}
+.tt-follow-btn{padding:4px 12px;background:var(--accent2);color:white;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-left:8px;}
+.tt-caption{color:white;font-size:13px;line-height:1.5;margin-bottom:10px;}
+.tt-sound{display:flex;align-items:center;gap:6px;color:#ddd;font-size:12px;}
+.tt-sound-disc{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px;animation:spin 3s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tt-upload-fab{position:absolute;top:18px;right:18px;z-index:3;background:var(--accent2);color:white;border:none;padding:9px 16px;border-radius:25px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:7px;box-shadow:0 4px 20px rgba(255,45,85,.4);}
+.tt-nav-arrows{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;display:flex;gap:10px;z-index:3;}
+.tt-nav-arrows button{background:rgba(255,255,255,.15);color:white;border:none;width:34px;height:34px;border-radius:50%;font-size:13px;cursor:pointer;backdrop-filter:blur(6px);}
+
+/* LIVE */
+.live-layout{max-width:1200px;margin:0 auto;padding:24px 16px;}
+.live-banner{background:linear-gradient(135deg,#e11d48,#7c3aed);border-radius:20px;padding:30px;margin-bottom:28px;color:white;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;}
+.live-banner::before{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.07);}
+.live-banner h2{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:6px;display:flex;align-items:center;gap:10px;}
+.live-banner p{font-size:14px;opacity:.85;}
+.go-live-btn{background:white;color:#e11d48;border:none;padding:11px 22px;border-radius:25px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:7px;z-index:1;}
+.live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;}
+.live-card{background:white;border-radius:18px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:transform .2s;}
+.live-card:hover{transform:translateY(-4px);}
+.live-thumb{height:180px;display:flex;align-items:center;justify-content:center;font-size:60px;position:relative;}
+.live-badge{position:absolute;top:12px;left:12px;background:#e11d48;color:white;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.5px;display:flex;align-items:center;gap:5px;}
+.live-badge .live-dot{width:6px;height:6px;}
+.viewer-count{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.6);color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:5px;}
+.live-info{padding:16px;}
+.live-info h4{font-size:14px;font-weight:700;margin-bottom:4px;}
+.live-info p{font-size:12px;color:var(--muted);}
+.live-host{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.live-host-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;}
+.live-host span{font-size:12px;font-weight:600;}
+.join-live-btn{width:100%;margin-top:12px;padding:9px;background:linear-gradient(135deg,#e11d48,#7c3aed);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:.2s;}
+.join-live-btn:hover{opacity:.9;}
+
+/* SHOP */
+.jm-layout{max-width:1100px;margin:0 auto;padding:24px 16px;}
+.jm-banner{background:linear-gradient(135deg,var(--accent3),#ef4444);border-radius:20px;padding:32px;display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;color:white;overflow:hidden;position:relative;}
+.jm-banner::before{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.1);}
+.jm-banner h2{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:6px;}
+.jm-banner p{font-size:14px;opacity:.85;}
+.shop-btn{background:white;color:var(--accent3);border:none;padding:12px 24px;border-radius:25px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:14px;z-index:1;}
+.categories{display:flex;gap:10px;margin-bottom:24px;overflow-x:auto;padding-bottom:4px;}
+.cat-pill{padding:8px 18px;border-radius:25px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:.2s;font-family:'DM Sans',sans-serif;color:var(--text);display:flex;align-items:center;gap:6px;}
+.cat-pill.active{background:var(--accent3);color:white;border-color:var(--accent3);}
+.cat-pill:hover{border-color:var(--accent3);color:var(--accent3);}
+.jm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;}
+.product-card{background:var(--card);border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:transform .2s;}
+.product-card:hover{transform:translateY(-4px);}
+.product-img{height:160px;display:flex;align-items:center;justify-content:center;font-size:50px;background:var(--bg);}
+.product-info{padding:14px;}
+.product-info h4{font-size:13px;font-weight:600;line-height:1.4;}
+.price{font-size:16px;font-weight:700;color:var(--accent3);margin-top:6px;}
+.old-price{font-size:12px;color:var(--muted);text-decoration:line-through;margin-left:6px;}
+.discount{font-size:11px;background:#fff3ed;color:var(--accent3);padding:2px 7px;border-radius:5px;font-weight:600;}
+.stars{color:#f59e0b;font-size:11px;margin-top:4px;}
+.stars span{color:var(--muted);font-size:11px;margin-left:4px;}
+.add-cart{width:100%;margin-top:10px;background:var(--accent3);color:white;border:none;padding:9px;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;}
+.add-cart:hover{background:#ea6800;}
+.cart-count{position:fixed;bottom:24px;right:24px;background:var(--accent3);color:white;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 20px rgba(249,115,22,.4);cursor:pointer;z-index:200;}
+.cart-badge{position:absolute;top:-4px;right:-4px;background:var(--accent2);color:white;width:20px;height:20px;border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+
+/* SCHOLARSHIPS */
+.sc-layout{max-width:1100px;margin:0 auto;padding:24px 16px;}
+.sc-banner{background:linear-gradient(135deg,var(--accent4),#2563eb);border-radius:20px;padding:36px;margin-bottom:28px;color:white;position:relative;overflow:hidden;}
+.sc-banner::before{content:'🎓';position:absolute;right:32px;top:50%;transform:translateY(-50%);font-size:90px;opacity:.2;}
+.sc-banner h2{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:8px;}
+.sc-banner p{font-size:15px;opacity:.88;max-width:500px;}
+.sc-filters{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;}
+.sc-filter{padding:8px 18px;border-radius:25px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:.2s;font-family:'DM Sans',sans-serif;color:var(--text);}
+.sc-filter.active{background:var(--accent4);color:white;border-color:var(--accent4);}
+.sc-filter:hover{border-color:var(--accent4);color:var(--accent4);}
+.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;}
+.sc-card{background:white;border-radius:18px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;transition:transform .2s;}
+.sc-card:hover{transform:translateY(-4px);}
+.sc-card-top{padding:20px;display:flex;gap:14px;align-items:flex-start;}
+.sc-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.sc-card-info h4{font-size:15px;font-weight:700;line-height:1.3;}
+.sc-card-info p{font-size:12px;color:var(--muted);margin-top:3px;}
+.sc-card-body{padding:0 20px 20px;}
+.sc-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.sc-meta-item{background:var(--bg);border-radius:10px;padding:10px 12px;}
+.sc-meta-item label{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.sc-meta-item span{font-size:13px;font-weight:600;}
+.sc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.sc-desc{font-size:13px;color:#555;line-height:1.6;margin-bottom:14px;}
+.sc-apply-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--accent4),#2563eb);color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.sc-apply-btn:hover{opacity:.9;}
+.sc-deadline{font-size:12px;color:var(--accent2);font-weight:600;display:flex;align-items:center;gap:4px;margin-bottom:12px;}
+.sc-stats-bar{display:flex;gap:16px;padding:14px 20px;border-top:1px solid var(--border);background:var(--bg);}
+.sc-stat{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.sc-stat i{color:var(--accent4);}
+
+/* ANIMATIONS */
+.fade-up{opacity:0;transform:translateY(18px);animation:fadeUp .5s forwards;}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}.delay-4{animation-delay:.4s}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#16a34a;color:white;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:600;opacity:0;z-index:1100;transition:all .3s;display:flex;align-items:center;gap:8px;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:900px){
+  .ln-layout{grid-template-columns:1fr;}
+  .search-bar{display:none;}
+  .sc-grid{grid-template-columns:1fr;}
+  .tt-sidebar{display:none;}
+  .live-grid{grid-template-columns:1fr;}
+  .sub-plans{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuth()"><i class="fas fa-times"></i></button>
+    <div class="modal-logo">Kazi<span>Link</span> Pro</div>
+    <p class="modal-sub">Connect · Work · Grow</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuth('login',this)">Log In</button>
+      <button class="auth-tab" onclick="switchAuth('register',this)">Create Account</button>
+    </div>
+    <div id="loginForm">
+      <div class="form-group"><label>Email or Phone</label><input type="text" id="loginEmail" placeholder="e.g. john@email.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Enter your password"></div>
+      <button class="auth-btn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i>&nbsp; Log In</button>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:12px;cursor:pointer;">Forgot password?</p>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="form-row">
+        <div class="form-group"><label>First Name</label><input type="text" id="regFirst" placeholder="John"></div>
+        <div class="form-group"><label>Last Name</label><input type="text" id="regLast" placeholder="Mwangi"></div>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="you@email.com"></div>
+      <div class="form-group"><label>Phone (M-Pesa)</label><input type="tel" id="regPhone" placeholder="+254 790 808 322"></div>
+      <div class="form-group"><label>I am a…</label>
+        <select id="regRole"><option value="">Select your role</option><option>Job Seeker / Worker</option><option>Employer / Business</option><option>Student / Scholar</option><option>Freelancer / Talent</option></select>
+      </div>
+      <div class="form-group"><label>Password</label><input type="password" id="regPass" placeholder="Min 8 characters"></div>
+      <button class="auth-btn" onclick="doRegister()"><i class="fas fa-user-plus"></i>&nbsp; Create Account</button>
+    </div>
+    <div class="social-divider">or continue with</div>
+    <div class="social-btns">
+      <button class="social-btn" onclick="socialLogin('Google')"><i class="fab fa-google" style="color:#ea4335"></i> Google</button>
+      <button class="social-btn" onclick="socialLogin('Facebook')"><i class="fab fa-facebook" style="color:#1877f2"></i> Facebook</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUBSCRIPTION MODAL -->
+<div class="modal-overlay" id="subModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeSub()"><i class="fas fa-times"></i></button>
+    <div class="modal-logo">Kazi<span>Link</span> Pro</div>
+    <p class="modal-sub" id="subModalSub">Unlock full access</p>
+    <div class="sub-plans">
+      <div class="sub-plan" onclick="selectPlan(this,'Basic','KES 299')">
+        <h3>Basic</h3>
+        <div class="plan-price">KES 299<span>/mo</span></div>
+        <ul><li>Network feed access</li><li>Apply to 5 jobs/mo</li><li>Basic scholarship list</li><li>Email support</li></ul>
+      </div>
+      <div class="sub-plan popular selected" onclick="selectPlan(this,'Pro','KES 599')">
+        <h3>Pro ⭐</h3>
+        <div class="plan-price">KES 599<span>/mo</span></div>
+        <ul><li>Everything in Basic</li><li>Unlimited job applications</li><li>All scholarships + alerts</li><li>Live session access</li><li>Priority support</li></ul>
+      </div>
+    </div>
+    <p style="font-size:13px;font-weight:700;margin-bottom:10px;">Choose payment method</p>
+    <div class="pay-methods">
+      <div class="pay-method selected" onclick="selectPay(this,'mpesa')"><i class="fas fa-mobile-alt" style="color:#00b300"></i> M-Pesa</div>
+      <div class="pay-method" onclick="selectPay(this,'card')"><i class="fas fa-credit-card" style="color:var(--accent1)"></i> Card</div>
+      <div class="pay-method" onclick="selectPay(this,'airtel')"><i class="fas fa-sim-card" style="color:#e11d48"></i> Airtel Money</div>
+      <div class="pay-method" onclick="selectPay(this,'bank')"><i class="fas fa-university" style="color:var(--muted)"></i> Bank Transfer</div>
+    </div>
+    <div id="mpesaField" style="margin-top:4px;">
+      <div class="form-group"><label>M-Pesa Number</label><input type="tel" id="mpesaNum" placeholder="+254 790 808 322"></div>
+    </div>
+    <div id="cardField" style="display:none;margin-top:4px;">
+      <div class="form-group"><label>Card Number</label><input type="text" placeholder="XXXX XXXX XXXX XXXX"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Expiry</label><input type="text" placeholder="MM/YY"></div>
+        <div class="form-group"><label>CVV</label><input type="text" placeholder="123"></div>
+      </div>
+    </div>
+    <button class="auth-btn" style="background:linear-gradient(135deg,var(--accent5),#16a34a)" onclick="doSubscribe()">
+      <i class="fas fa-lock-open"></i>&nbsp; Subscribe Now
+    </button>
+    <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;">🔒 Secure · Cancel anytime · Questions? <a href="mailto:pitahwambuajr@gmail.com" style="color:var(--accent1)">pitahwambuajr@gmail.com</a></p>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">Kazi<span>Link</span> Pro</div>
+  <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search jobs, talent, scholarships…"></div>
+  <div class="topbar-actions">
+    <div class="notif-btn" id="notifBtn" style="display:none"><i class="fas fa-bell"></i><div class="badge">3</div></div>
+    <button class="login-topbar-btn" id="loginBtn" onclick="openAuth()"><i class="fas fa-sign-in-alt"></i> Log In</button>
+    <div class="user-menu" id="userMenu" style="display:none">
+      <div class="avatar" id="userAvatar" onclick="toggleDropdown()">JM</div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-header">
+          <strong id="dropdownName">John Mwangi</strong>
+          <span id="dropdownRole">Member</span>
+          <div id="subBadge" style="display:none"><span class="sub-badge">✨ Pro Member</span></div>
+        </div>
+        <div class="dropdown-item" onclick="showToast('Profile coming soon!')"><i class="fas fa-user"></i> My Profile</div>
+        <div class="dropdown-item" onclick="showToast('Applications coming soon!')"><i class="fas fa-file-alt"></i> My Applications</div>
+        <div class="dropdown-item" onclick="openSub('manage')"><i class="fas fa-crown"></i> Subscription</div>
+        <div class="dropdown-item" onclick="showToast('Settings coming soon!')"><i class="fas fa-cog"></i> Settings</div>
+        <div class="dropdown-item" onclick="showToast('📞 +254790808322 | ✉️ pitahwambuajr@gmail.com')"><i class="fas fa-headset"></i> Support</div>
+        <div class="dropdown-item danger" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Log Out</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('network',this)"><i class="fas fa-users" style="color:#0057ff"></i> Network</button>
+  <button class="tab-btn talent-tab" onclick="switchTab('talent',this)"><i class="fas fa-star" style="color:#ff2d55"></i> Talent</button>
+  <button class="tab-btn live-tab" onclick="switchTab('live',this)"><span class="live-dot"></span> Live</button>
+  <button class="tab-btn jumia" onclick="switchTab('shop',this)"><i class="fas fa-shopping-bag" style="color:#f97316"></i> Shop</button>
+  <button class="tab-btn scholar-tab" onclick="switchTab('scholarships',this)"><i class="fas fa-graduation-cap" style="color:#7c3aed"></i> Scholarships</button>
+</div>
+
+<!-- NETWORK TAB -->
+<div id="network" class="tab-content active">
+  <div class="ln-layout">
+    <div>
+      <div class="card profile-card fade-up">
+        <div class="profile-banner"></div>
+        <div class="profile-info">
+          <div class="profile-avatar" id="sidebarAvatar">JM</div>
+          <h3 id="sidebarName">John Mwangi</h3>
+          <p>Skilled Mason · Nairobi, Kenya</p>
+        </div>
+        <div class="profile-stats">
+          <div class="stat"><strong>142</strong><span>Connections</span></div>
+          <div class="stat"><strong>18</strong><span>Applications</span></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;padding:16px;">
+        <p style="font-size:13px;font-weight:700;margin-bottom:12px;">🔥 Trending Jobs</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:13px;"><strong>Site Supervisor</strong><br><span style="color:var(--muted);font-size:12px;">Kilimani · KES 4,500/day</span></div>
+          <div style="font-size:13px;"><strong>Welder</strong><br><span style="color:var(--muted);font-size:12px;">Mombasa · Contract</span></div>
+          <div style="font-size:13px;"><strong>Security Guard</strong><br><span style="color:var(--muted);font-size:12px;">CBD · KES 800/shift</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="feed fade-up delay-1">
+      <div class="sub-lock" id="networkLock">
+        <i class="fas fa-crown"></i>
+        <div><h4>Unlock Full Network Access</h4><p>Subscribe to apply for jobs and connect with professionals.</p></div>
+        <button class="sub-lock-btn" onclick="openSub('network')">Subscribe – KES 299/mo</button>
+      </div>
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div class="avatar" style="width:42px;height:42px;" id="feedAvatar">JM</div>
+          <input type="text" placeholder="Share a skill, opportunity or update…" style="flex:1;padding:10px 16px;border-radius:25px;border:1px solid var(--border);font-family:'DM Sans',sans-serif;font-size:14px;background:var(--bg);outline:none;" onclick="checkSub('network')">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="action-btn"><i class="fas fa-video" style="color:var(--accent2)"></i> Video</button>
+          <button class="action-btn"><i class="fas fa-image" style="color:#16a34a"></i> Photo</button>
+          <button class="action-btn"><i class="fas fa-briefcase" style="color:var(--accent1)"></i> Job</button>
+        </div>
+      </div>
+      <div class="card post-card fade-up delay-2">
+        <div class="post-header">
+          <div class="post-avatar" style="background:linear-gradient(135deg,#0057ff,#00c6ff)">MW</div>
+          <div class="post-meta"><h4>Mary Wanjiku</h4><span>Professional Cleaner · 2h ago</span></div>
+        </div>
+        <p class="post-text">Just completed a 3-month contract at Westlands estate. Available for new opportunities! 🧹✨</p>
+        <div class="post-image">🏠</div>
+        <div class="post-actions">
+          <button class="action-btn"><i class="fas fa-thumbs-up"></i> 24 Likes</button>
+          <button class="action-btn"><i class="fas fa-comment"></i> 7 Comments</button>
+          <button class="action-btn"><i class="fas fa-share"></i> Share</button>
+        </div>
+      </div>
+      <div class="card post-card fade-up delay-3">
+        <div class="post-header">
+          <div class="post-avatar" style="background:linear-gradient(135deg,#f97316,#ef4444)">PO</div>
+          <div class="post-meta"><h4>Peter Odhiambo</h4><span>Electrical Contractor · 5h ago</span></div>
+        </div>
+        <p class="post-text">Hiring 3 experienced electricians for Thika Road project. EPRA cert required. KES 3,000/day ⚡</p>
+        <div class="job-tags" style="margin-top:10px;"><span class="tag">Electrician</span><span class="tag green">Hiring Now</span><span class="tag">Thika Road</span></div>
+        <div class="post-actions">
+          <button class="action-btn"><i class="fas fa-thumbs-up"></i> 51 Likes</button>
+          <button class="apply-btn" onclick="checkSub('network')"><i class="fas fa-paper-plane"></i> Apply Now</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;" class="fade-up delay-4">
+      <p style="font-weight:700;font-size:15px;padding:4px 0;">🎯 Jobs For You</p>
+      <div class="card job-card"><div class="job-icon" style="background:#eef2ff;">🏗️</div><div class="job-info"><h4>Construction Worker</h4><p>Nairobi CBD · KES 1,500/day</p><div class="job-tags"><span class="tag">Daily Pay</span><span class="tag green">Open</span></div><button class="apply-btn" style="margin-top:8px;" onclick="checkSub('network')">Apply</button></div></div>
+      <div class="card job-card"><div class="job-icon" style="background:#fff3ed;">🔧</div><div class="job-info"><h4>Plumber Needed</h4><p>Karen Estate · Contract</p><div class="job-tags"><span class="tag">Experienced</span></div><button class="apply-btn" style="margin-top:8px;" onclick="checkSub('network')">Apply</button></div></div>
+      <div class="card job-card"><div class="job-icon" style="background:#f0fdf4;">🌿</div><div class="job-info"><h4>Gardener</h4><p>Lavington · KES 800/day</p><div class="job-tags"><span class="tag green">Beginner OK</span></div><button class="apply-btn" style="margin-top:8px;" onclick="checkSub('network')">Apply</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TALENT TAB — TikTok style -->
+<div id="talent" class="tab-content">
+  <div class="tt-layout">
+    <div class="tt-sidebar">
+      <p class="tt-sidebar-title">Discover</p>
+      <div class="tt-side-item active"><i class="fas fa-fire"></i> For You</div>
+      <div class="tt-side-item"><i class="fas fa-users"></i> Following</div>
+      <div class="tt-side-item"><i class="fas fa-search"></i> Explore</div>
+      <div class="tt-side-item"><i class="fas fa-bookmark"></i> Saved</div>
+      <p class="tt-sidebar-title" style="margin-top:10px;">Categories</p>
+      <div class="tt-side-item"><i class="fas fa-hard-hat"></i> Construction</div>
+      <div class="tt-side-item"><i class="fas fa-bolt"></i> Electrical</div>
+      <div class="tt-side-item"><i class="fas fa-tint"></i> Plumbing</div>
+      <div class="tt-side-item"><i class="fas fa-broom"></i> Cleaning</div>
+      <div class="tt-side-item"><i class="fas fa-laptop-code"></i> Tech</div>
+      <div class="tt-side-item"><i class="fas fa-paint-brush"></i> Creative</div>
+      <div class="tt-trending">
+        <div class="tt-trending-title"><i class="fas fa-hashtag"></i> Trending</div>
+        <div class="tt-trend-tag">#PlumbingKE &nbsp;· 4.2M</div>
+        <div class="tt-trend-tag">#SkillsForWork &nbsp;· 1.8M</div>
+        <div class="tt-trend-tag">#NairobiTrades &nbsp;· 920K</div>
+        <div class="tt-trend-tag">#KaziLink &nbsp;· 612K</div>
+      </div>
+    </div>
+    <div class="tt-feed" id="ttFeed">
+      <button class="tt-upload-fab" onclick="document.getElementById('vidInput').click()"><i class="fas fa-plus"></i> Upload</button>
+      <input type="file" id="vidInput" accept="video/*" style="display:none" onchange="handleUpload(this)">
+      <!-- Video 1 -->
+      <div class="tt-video-wrap">
+        <div class="tt-video-bg" style="background:linear-gradient(180deg,#1a0a00,#3d1a00)">🔧</div>
+        <div class="tt-overlay"></div>
+        <div class="tt-actions">
+          <div class="tt-action-btn" onclick="toggleLike(this)"><div class="icon"><i class="fas fa-heart"></i></div><span>1.2k</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-comment"></i></div><span>84</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-share"></i></div><span>Share</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-bookmark"></i></div><span>Save</span></div>
+        </div>
+        <div class="tt-info-bottom">
+          <div class="tt-user"><div class="tt-user-avatar" style="background:linear-gradient(135deg,#f97316,#ef4444)">KP</div><div><strong>@kamau_plumber</strong><span>Nairobi · Plumber</span></div><button class="tt-follow-btn">Follow</button></div>
+          <p class="tt-caption">Plumbing a kitchen sink step by step 🔧 Fix a blocked drain in 10 mins! #PlumbingKE #Skills</p>
+          <div class="tt-sound"><div class="tt-sound-disc">🎵</div><span>Original audio – kamau_plumber</span></div>
+        </div>
+        <div class="tt-nav-arrows"><button onclick="scrollFeed(-1)"><i class="fas fa-chevron-up"></i></button><button onclick="scrollFeed(1)"><i class="fas fa-chevron-down"></i></button></div>
+      </div>
+      <!-- Video 2 -->
+      <div class="tt-video-wrap">
+        <div class="tt-video-bg" style="background:linear-gradient(180deg,#000d1a,#001f3f)">⚡</div>
+        <div class="tt-overlay"></div>
+        <div class="tt-actions">
+          <div class="tt-action-btn" onclick="toggleLike(this)"><div class="icon"><i class="fas fa-heart"></i></div><span>3.5k</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-comment"></i></div><span>210</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-share"></i></div><span>Share</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-bookmark"></i></div><span>Save</span></div>
+        </div>
+        <div class="tt-info-bottom">
+          <div class="tt-user"><div class="tt-user-avatar" style="background:linear-gradient(135deg,#0057ff,#00c6ff)">NE</div><div><strong>@njoroge_electric</strong><span>Thika · Electrician</span></div><button class="tt-follow-btn">Follow</button></div>
+          <p class="tt-caption">Wiring a DB board safely ⚡ Full safety tutorial for beginners. #ElectricalKE #SafetyFirst</p>
+          <div class="tt-sound"><div class="tt-sound-disc">🎵</div><span>Original audio – njoroge_electric</span></div>
+        </div>
+      </div>
+      <!-- Video 3 -->
+      <div class="tt-video-wrap">
+        <div class="tt-video-bg" style="background:linear-gradient(180deg,#001a0d,#003d1a)">🪣</div>
+        <div class="tt-overlay"></div>
+        <div class="tt-actions">
+          <div class="tt-action-btn" onclick="toggleLike(this)"><div class="icon"><i class="fas fa-heart"></i></div><span>890</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-comment"></i></div><span>43</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-share"></i></div><span>Share</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-bookmark"></i></div><span>Save</span></div>
+        </div>
+        <div class="tt-info-bottom">
+          <div class="tt-user"><div class="tt-user-avatar" style="background:linear-gradient(135deg,#059669,#10b981)">CM</div><div><strong>@cleanpro_mary</strong><span>Westlands · Cleaner</span></div><button class="tt-follow-btn">Follow</button></div>
+          <p class="tt-caption">Deep cleaning a 4-bedroom house 🧹✨ Time-lapse of a full day clean. #CleaningKE</p>
+          <div class="tt-sound"><div class="tt-sound-disc">🎵</div><span>Afrobeat mix – cleanpro_mary</span></div>
+        </div>
+      </div>
+      <!-- Video 4 -->
+      <div class="tt-video-wrap">
+        <div class="tt-video-bg" style="background:linear-gradient(180deg,#1a0014,#3d002e)">🏗️</div>
+        <div class="tt-overlay"></div>
+        <div class="tt-actions">
+          <div class="tt-action-btn" onclick="toggleLike(this)"><div class="icon"><i class="fas fa-heart"></i></div><span>2.1k</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-comment"></i></div><span>128</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-share"></i></div><span>Share</span></div>
+          <div class="tt-action-btn"><div class="icon"><i class="fas fa-bookmark"></i></div><span>Save</span></div>
+        </div>
+        <div class="tt-info-bottom">
+          <div class="tt-user"><div class="tt-user-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">TM</div><div><strong>@tile_master_ke</strong><span>Karen · Mason</span></div><button class="tt-follow-btn">Follow</button></div>
+          <p class="tt-caption">Laying tiles like a pro 🏗️ Watch the floor transformation! DM for bookings. #TilingKE</p>
+          <div class="tt-sound"><div class="tt-sound-disc">🎵</div><span>Genge mix – tile_master_ke</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE TAB -->
+<div id="live" class="tab-content">
+  <div class="live-layout">
+    <div class="live-banner fade-up">
+      <div><h2><span class="live-dot"></span> KaziLink Live</h2><p>Watch live skill demos, Q&amp;A sessions, and job fairs happening right now.</p></div>
+      <button class="go-live-btn" onclick="checkSub('live')"><i class="fas fa-video"></i> Go Live</button>
+    </div>
+    <div class="live-grid">
+      <div class="live-card fade-up"><div class="live-thumb" style="background:linear-gradient(135deg,#1a0a00,#7c2d00)">🔧<div class="live-badge"><span class="live-dot"></span> LIVE</div><div class="viewer-count"><i class="fas fa-eye"></i> 342</div></div><div class="live-info"><h4>Plumbing Masterclass — Ask Me Anything</h4><p>Live Q&amp;A with a certified plumber.</p><div class="live-host"><div class="live-host-avatar" style="background:linear-gradient(135deg,#f97316,#ef4444)">KP</div><span>@kamau_plumber</span></div><button class="join-live-btn" onclick="checkSub('live')"><i class="fas fa-play"></i> Join Live</button></div></div>
+      <div class="live-card fade-up delay-1"><div class="live-thumb" style="background:linear-gradient(135deg,#000d1a,#003d7a)">⚡<div class="live-badge"><span class="live-dot"></span> LIVE</div><div class="viewer-count"><i class="fas fa-eye"></i> 218</div></div><div class="live-info"><h4>Electrical Safety for Homeowners</h4><p>Learn what to do in an electrical emergency.</p><div class="live-host"><div class="live-host-avatar" style="background:linear-gradient(135deg,#0057ff,#00c6ff)">NE</div><span>@njoroge_electric</span></div><button class="join-live-btn" onclick="checkSub('live')"><i class="fas fa-play"></i> Join Live</button></div></div>
+      <div class="live-card fade-up delay-2"><div class="live-thumb" style="background:linear-gradient(135deg,#0a001a,#2d007a)">🎓<div class="live-badge"><span class="live-dot"></span> LIVE</div><div class="viewer-count"><i class="fas fa-eye"></i> 591</div></div><div class="live-info"><h4>Scholarship Tips — Winning Essays</h4><p>Live coaching for Kenyan scholarship applicants.</p><div class="live-host"><div class="live-host-avatar" style="background:linear-gradient(135deg,#7c3aed,#2563eb)">SC</div><span>@scholar_coach_ke</span></div><button class="join-live-btn" onclick="checkSub('live')"><i class="fas fa-play"></i> Join Live</button></div></div>
+      <div class="live-card fade-up delay-3"><div class="live-thumb" style="background:linear-gradient(135deg,#001a0a,#004d1a)">💼<div class="live-badge" style="background:#059669"><span class="live-dot" style="background:white"></span> UPCOMING</div><div class="viewer-count"><i class="fas fa-clock"></i> 3:00 PM</div></div><div class="live-info"><h4>Virtual Job Fair — Construction & Trades</h4><p>Meet 12 employers hiring now. Bring your CV!</p><div class="live-host"><div class="live-host-avatar" style="background:linear-gradient(135deg,#059669,#10b981)">KL</div><span>@kazilinkpro</span></div><button class="join-live-btn" style="background:linear-gradient(135deg,#059669,#16a34a)" onclick="showToast('Reminder set for 3:00 PM! 🔔')"><i class="fas fa-bell"></i> Set Reminder</button></div></div>
+      <div class="live-card fade-up"><div class="live-thumb" style="background:linear-gradient(135deg,#1a000a,#7a0030)">🪣<div class="live-badge"><span class="live-dot"></span> LIVE</div><div class="viewer-count"><i class="fas fa-eye"></i> 147</div></div><div class="live-info"><h4>Start Your Cleaning Business in 30 Days</h4><p>Step-by-step guide to launching a profitable cleaning service.</p><div class="live-host"><div class="live-host-avatar" style="background:linear-gradient(135deg,#059669,#10b981)">CM</div><span>@cleanpro_mary</span></div><button class="join-live-btn" onclick="checkSub('live')"><i class="fas fa-play"></i> Join Live</button></div></div>
+      <div class="live-card fade-up delay-1"><div class="live-thumb" style="background:linear-gradient(135deg,#111,#333)">📱<div class="live-badge" style="background:#059669"><span class="live-dot" style="background:white"></span> UPCOMING</div><div class="viewer-count"><i class="fas fa-clock"></i> Tomorrow</div></div><div class="live-info"><h4>Tech Skills Bootcamp — Free Session</h4><p>Intro to coding and digital skills for job seekers.</p><div class="live-host"><div class="live-host-avatar" style="background:linear-gradient(135deg,#0057ff,#7c3aed)">TC</div><span>@techcoach_ke</span></div><button class="join-live-btn" style="background:linear-gradient(135deg,#059669,#16a34a)" onclick="showToast('Reminder set! 🔔')"><i class="fas fa-bell"></i> Set Reminder</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SHOP TAB -->
+<div id="shop" class="tab-content">
+  <div class="jm-layout">
+    <div class="jm-banner fade-up"><div><h2>🛒 KaziLink Shop</h2><p>Tools, equipment & supplies — delivered to you</p></div><button class="shop-btn">Browse All</button></div>
+    <div class="categories">
+      <div class="cat-pill active" onclick="setCategory(this)">🔨 All</div>
+      <div class="cat-pill" onclick="setCategory(this)">⚡ Electrical</div>
+      <div class="cat-pill" onclick="setCategory(this)">🔧 Plumbing</div>
+      <div class="cat-pill" onclick="setCategory(this)">🧹 Cleaning</div>
+      <div class="cat-pill" onclick="setCategory(this)">🏗️ Construction</div>
+      <div class="cat-pill" onclick="setCategory(this)">📱 Electronics</div>
+    </div>
+    <div class="jm-grid">
+      <div class="product-card fade-up"><div class="product-img">🔧</div><div class="product-info"><h4>Professional Tool Set (42 pcs)</h4><div class="price">KES 2,500 <span class="old-price">3,200</span> <span class="discount">-22%</span></div><div class="stars">★★★★★ <span>(128)</span></div><button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button></div></div>
+      <div class="product-card fade-up delay-1"><div class="product-img">💡</div><div class="product-info"><h4>LED Work Light 50W Waterproof</h4><div class="price">KES 1,800 <span class="old-price">2,400</span> <span class="discount">-25%</span></div><div class="stars">★★★★☆ <span>(74)</span></div><button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button></div></div>
+      <div class="product-card fade-up delay-2"><div class="product-img">🪣</div><div class="product-info"><h4>Heavy Duty Cleaning Kit</h4><div class="price">KES 950 <span class="old-price">1,200</span> <span class="discount">-21%</span></div><div class="stars">★★★★★ <span>(211)</span></div><button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button></div></div>
+      <div class="product-card fade-up delay-3"><div class="product-img">📱</div><div class="product-info"><h4>Smartphone 4G – 64GB</h4><div class="price">KES 12,999 <span class="old-price">15,000</span> <span class="discount">-13%</span></div><div class="stars">★★★★☆ <span>(56)</span></div><button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button></div></div>
+      <div class="product-card fade-up"><div class="product-img">🏗️</div><div class="product-info"><h4>Cement Bags (50kg) × 5</h4><div class="price">KES 3,500</div><div class="stars">★★★★★ <span>(302)</span></div><button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button></div></div>
+      <div class="product-card fade-up delay-1"><div class="product-img">🔌</div><div class="product-info"><h4>Electrical Cable Roll 2.5mm</h4><div class="price">KES 4,200 <span class="old-price">5,000</span> <span class="discount">-16%</span></div><div class="stars">★★★★☆ <span>(88)</span></div><button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCHOLARSHIPS TAB -->
+<div id="scholarships" class="tab-content">
+  <div class="sc-layout">
+    <div class="sc-banner fade-up"><h2>Scholarships & Bursaries</h2><p>Discover funding opportunities for education and professional development in Kenya and beyond.</p></div>
+    <div class="sub-lock" id="scholarLock">
+      <i class="fas fa-graduation-cap" style="color:var(--accent4)"></i>
+      <div><h4>Unlock All Scholarships</h4><p>Subscribe to see all opportunities, deadline alerts, and apply directly.</p></div>
+      <button class="sub-lock-btn" style="background:var(--accent4)" onclick="openSub('scholarships')">Subscribe – KES 299/mo</button>
+    </div>
+    <div class="sc-filters">
+      <div class="sc-filter active" onclick="setFilter(this)">🎓 All</div>
+      <div class="sc-filter" onclick="setFilter(this)">🇰🇪 Local</div>
+      <div class="sc-filter" onclick="setFilter(this)">🌍 International</div>
+      <div class="sc-filter" onclick="setFilter(this)">🔧 Vocational</div>
+      <div class="sc-filter" onclick="setFilter(this)">💻 Tech</div>
+      <div class="sc-filter" onclick="setFilter(this)">👩 Women</div>
+      <div class="sc-filter" onclick="setFilter(this)">🏫 University</div>
+    </div>
+    <div class="sc-grid">
+      <div class="sc-card fade-up"><div class="sc-card-top"><div class="sc-icon" style="background:#f5f3ff;">🏛️</div><div class="sc-card-info"><h4>Kenya Government Bursary Fund</h4><p>Ministry of Education · Kenya</p></div></div><div class="sc-card-body"><p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 30 June 2025</p><div class="sc-meta"><div class="sc-meta-item"><label>Amount</label><span>KES 20,000/yr</span></div><div class="sc-meta-item"><label>Level</label><span>Secondary & TVET</span></div></div><div class="sc-tags"><span class="tag purple">Local</span><span class="tag green">Open</span><span class="tag">Form 1–4</span></div><p class="sc-desc">Government bursary for needy students in public secondary schools and TVET institutions.</p><button class="sc-apply-btn" onclick="checkSub('scholarships')"><i class="fas fa-external-link-alt"></i> Apply Now</button></div><div class="sc-stats-bar"><div class="sc-stat"><i class="fas fa-users"></i> 12,400 applicants</div><div class="sc-stat"><i class="fas fa-award"></i> 3,200 awarded</div></div></div>
+      <div class="sc-card fade-up delay-1"><div class="sc-card-top"><div class="sc-icon" style="background:#eff6ff;">🌍</div><div class="sc-card-info"><h4>Mastercard Foundation Scholars</h4><p>Mastercard Foundation · International</p></div></div><div class="sc-card-body"><p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 31 August 2025</p><div class="sc-meta"><div class="sc-meta-item"><label>Amount</label><span>Full Scholarship</span></div><div class="sc-meta-item"><label>Level</label><span>University</span></div></div><div class="sc-tags"><span class="tag purple">International</span><span class="tag green">Open</span></div><p class="sc-desc">Full scholarship for academically talented yet economically disadvantaged young Africans at top universities.</p><button class="sc-apply-btn" onclick="checkSub('scholarships')"><i class="fas fa-external-link-alt"></i> Apply Now</button></div><div class="sc-stats-bar"><div class="sc-stat"><i class="fas fa-users"></i> 45,000 applicants</div><div class="sc-stat"><i class="fas fa-award"></i> 500 awarded/yr</div></div></div>
+      <div class="sc-card fade-up delay-2"><div class="sc-card-top"><div class="sc-icon" style="background:#fef3c7;">🔧</div><div class="sc-card-info"><h4>TVET Authority Skills Grant</h4><p>TVETA Kenya · Vocational</p></div></div><div class="sc-card-body"><p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 15 July 2025</p><div class="sc-meta"><div class="sc-meta-item"><label>Amount</label><span>KES 45,000</span></div><div class="sc-meta-item"><label>Level</label><span>Certificate / Diploma</span></div></div><div class="sc-tags"><span class="tag purple">Vocational</span><span class="tag green">Open</span></div><p class="sc-desc">Covers tuition, tools and accommodation for skilled trades including plumbing, electrical, and masonry.</p><button class="sc-apply-btn" onclick="checkSub('scholarships')"><i class="fas fa-external-link-alt"></i> Apply Now</button></div><div class="sc-stats-bar"><div class="sc-stat"><i class="fas fa-users"></i> 8,900 applicants</div><div class="sc-stat"><i class="fas fa-award"></i> 2,100 awarded</div></div></div>
+      <div class="sc-card fade-up delay-3"><div class="sc-card-top"><div class="sc-icon" style="background:#ecfdf5;">💻</div><div class="sc-card-info"><h4>Google Africa Developer Scholarship</h4><p>Google via Andela · Tech</p></div></div><div class="sc-card-body"><p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 1 September 2025</p><div class="sc-meta"><div class="sc-meta-item"><label>Amount</label><span>Full Training</span></div><div class="sc-meta-item"><label>Level</label><span>Any level</span></div></div><div class="sc-tags"><span class="tag purple">Tech</span><span class="tag green">Open</span></div><p class="sc-desc">Free cloud and mobile development training plus certification for young Africans.</p><button class="sc-apply-btn" onclick="checkSub('scholarships')"><i class="fas fa-external-link-alt"></i> Apply Now</button></div><div class="sc-stats-bar"><div class="sc-stat"><i class="fas fa-users"></i> 30,000 applicants</div><div class="sc-stat"><i class="fas fa-award"></i> 1,000 seats</div></div></div>
+      <div class="sc-card fade-up"><div class="sc-card-top"><div class="sc-icon" style="background:#fdf2f8;">👩</div><div class="sc-card-info"><h4>Equity Wings to Fly</h4><p>Equity Foundation · Kenya</p></div></div><div class="sc-card-body"><p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 28 February 2026</p><div class="sc-meta"><div class="sc-meta-item"><label>Amount</label><span>Full Board</span></div><div class="sc-meta-item"><label>Level</label><span>Form 1 entry</span></div></div><div class="sc-tags"><span class="tag purple">Local</span><span class="tag green">Open</span></div><p class="sc-desc">Transformative scholarship for bright but disadvantaged students entering Form 1.</p><button class="sc-apply-btn" onclick="checkSub('scholarships')"><i class="fas fa-external-link-alt"></i> Apply Now</button></div><div class="sc-stats-bar"><div class="sc-stat"><i class="fas fa-users"></i> 50,000 applicants</div><div class="sc-stat"><i class="fas fa-award"></i> 3,000 awarded/yr</div></div></div>
+      <div class="sc-card fade-up delay-1"><div class="sc-card-top"><div class="sc-icon" style="background:#fff7ed;">🌏</div><div class="sc-card-info"><h4>Commonwealth Scholarship</h4><p>Commonwealth Foundation · UK</p></div></div><div class="sc-card-body"><p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 15 October 2025</p><div class="sc-meta"><div class="sc-meta-item"><label>Amount</label><span>Full + Stipend</span></div><div class="sc-meta-item"><label>Level</label><span>Masters / PhD</span></div></div><div class="sc-tags"><span class="tag purple">International</span><span class="tag">Postgraduate</span></div><p class="sc-desc">Prestigious scholarship for Kenyan students at leading UK universities, with flights and living allowance.</p><button class="sc-apply-btn" onclick="checkSub('scholarships')"><i class="fas fa-external-link-alt"></i> Apply Now</button></div><div class="sc-stats-bar"><div class="sc-stat"><i class="fas fa-users"></i> 7,200 applicants</div><div class="sc-stat"><i class="fas fa-award"></i> 80 Kenyan slots</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Cart -->
+<div class="cart-count" id="cartBtn" style="display:none" onclick="alert('Cart: '+cartItems+' items\n\nPay via M-Pesa: +254790808322')">
+  <i class="fas fa-shopping-cart"></i><div class="cart-badge" id="cartBadge">0</div>
+</div>
+
+<!-- WhatsApp — updated number -->
+<a href="https://wa.me/254790808322" target="_blank" title="WhatsApp: +254790808322"
+  style="position:fixed;bottom:90px;right:24px;background:#25d366;width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:22px;box-shadow:0 4px 16px rgba(37,211,102,.4);z-index:200;text-decoration:none;">
+  <i class="fab fa-whatsapp"></i>
+</a>
+
+<!-- Email FAB -->
+<a href="mailto:pitahwambuajr@gmail.com" target="_blank" title="Email: pitahwambuajr@gmail.com"
+  style="position:fixed;bottom:154px;right:24px;background:var(--accent1);width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:19px;box-shadow:0 4px 16px rgba(0,87,255,.35);z-index:200;text-decoration:none;">
+  <i class="fas fa-envelope"></i>
+</a>
+
+<!-- Toast -->
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+<script>
+let cartItems=0, loggedIn=false, isSubscribed=false, currentUser={}, selectedPlan='Pro', pendingSubContext='';
+
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function openAuth(){document.getElementById('authModal').classList.add('open');}
+function closeAuth(){document.getElementById('authModal').classList.remove('open');}
+document.getElementById('authModal').addEventListener('click',e=>{if(e.target===document.getElementById('authModal'))closeAuth();});
+
+function switchAuth(mode,btn){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('loginForm').style.display=mode==='login'?'block':'none';
+  document.getElementById('registerForm').style.display=mode==='register'?'block':'none';
+}
+
+function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  if(!email||!pass){showToast('Please fill in all fields',true);return;}
+  const name=email.split('@')[0];
+  loginUser({name:name.charAt(0).toUpperCase()+name.slice(1),initials:name.slice(0,2).toUpperCase(),role:'Member'});
+}
+function doRegister(){
+  const first=document.getElementById('regFirst').value.trim();
+  const last=document.getElementById('regLast').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const role=document.getElementById('regRole').value;
+  const pass=document.getElementById('regPass').value;
+  if(!first||!last||!email||!role||!pass){showToast('Please fill in all fields',true);return;}
+  loginUser({name:first+' '+last,initials:(first[0]+last[0]).toUpperCase(),role});
+}
+function socialLogin(p){loginUser({name:p+' User',initials:p[0]+'U',role:'Member'});}
+
+function loginUser(user){
+  loggedIn=true;currentUser=user;closeAuth();
+  document.getElementById('loginBtn').style.display='none';
+  document.getElementById('userMenu').style.display='block';
+  document.getElementById('notifBtn').style.display='flex';
+  document.getElementById('userAvatar').textContent=user.initials;
+  document.getElementById('dropdownName').textContent=user.name;
+  document.getElementById('dropdownRole').textContent=user.role;
+  document.getElementById('sidebarAvatar').textContent=user.initials;
+  document.getElementById('sidebarName').textContent=user.name;
+  document.getElementById('feedAvatar').textContent=user.initials;
+  showToast('Welcome, '+user.name.split(' ')[0]+'! 🎉');
+  if(pendingSubContext){setTimeout(()=>openSub(pendingSubContext),600);pendingSubContext='';}
+}
+function doLogout(){
+  loggedIn=false;isSubscribed=false;
+  document.getElementById('loginBtn').style.display='block';
+  document.getElementById('userMenu').style.display='none';
+  document.getElementById('notifBtn').style.display='none';
+  document.getElementById('userDropdown').classList.remove('open');
+  document.getElementById('sidebarAvatar').textContent='JM';
+  document.getElementById('sidebarName').textContent='John Mwangi';
+  document.getElementById('feedAvatar').textContent='JM';
+  document.getElementById('subBadge').style.display='none';
+  document.getElementById('networkLock').style.display='flex';
+  document.getElementById('scholarLock').style.display='flex';
+  showToast('You have been logged out.');
+}
+function toggleDropdown(){document.getElementById('userDropdown').classList.toggle('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('.user-menu'))document.getElementById('userDropdown').classList.remove('open');});
+
+function openSub(context){
+  pendingSubContext='';
+  if(!loggedIn){pendingSubContext=context;openAuth();return;}
+  document.getElementById('subModal').classList.add('open');
+  const t={network:'Unlock full Network & Job features',scholarships:'Unlock all Scholarships & Alerts',live:'Unlock Live sessions & Go Live',manage:'Manage your subscription'};
+  document.getElementById('subModalSub').textContent=t[context]||'Unlock full access';
+}
+function closeSub(){document.getElementById('subModal').classList.remove('open');}
+document.getElementById('subModal').addEventListener('click',e=>{if(e.target===document.getElementById('subModal'))closeSub();});
+
+function selectPlan(el,name){
+  document.querySelectorAll('.sub-plan').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');selectedPlan=name;
+}
+function selectPay(el,method){
+  document.querySelectorAll('.pay-method').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('mpesaField').style.display=method==='mpesa'?'block':'none';
+  document.getElementById('cardField').style.display=method==='card'?'block':'none';
+}
+function doSubscribe(){
+  isSubscribed=true;closeSub();
+  document.getElementById('subBadge').style.display='block';
+  document.getElementById('networkLock').style.display='none';
+  document.getElementById('scholarLock').style.display='none';
+  showToast('🎉 '+selectedPlan+' subscription active! Welcome to KaziLink Pro.');
+}
+function checkSub(section){
+  if(!loggedIn){pendingSubContext=section;openAuth();return;}
+  if(!isSubscribed){openSub(section);return;}
+  showToast('✅ Access granted!');
+}
+
+function showToast(msg,isError){
+  const t=document.getElementById('toast');
+  t.style.background=isError?'#dc2626':'#16a34a';
+  document.getElementById('toastMsg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+function addToCart(){
+  cartItems++;
+  document.getElementById('cartBadge').textContent=cartItems;
+  document.getElementById('cartBtn').style.display='flex';
+  const btn=event.target.closest('button');
+  const orig=btn.innerHTML;
+  btn.innerHTML='<i class="fas fa-check"></i> Added!';
+  btn.style.background='#16a34a';
+  setTimeout(()=>{btn.innerHTML=orig;btn.style.background='';},1200);
+}
+function setCategory(el){document.querySelectorAll('.cat-pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');}
+function setFilter(el){document.querySelectorAll('.sc-filter').forEach(f=>f.classList.remove('active'));el.classList.add('active');}
+function toggleLike(btn){btn.querySelector('.icon').classList.toggle('liked');}
+function scrollFeed(dir){const f=document.getElementById('ttFeed');f.scrollBy({top:dir*f.clientHeight,behavior:'smooth'});}
+function handleUpload(input){
+  if(!input.files[0])return;
+  const feed=document.getElementById('ttFeed');
+  const w=document.createElement('div');w.className='tt-video-wrap';
+  w.innerHTML=`<div class="tt-video-bg" style="background:linear-gradient(180deg,#0a001a,#2d0060)">🎥</div><div class="tt-overlay"></div>
+  <div class="tt-actions">
+    <div class="tt-action-btn" onclick="toggleLike(this)"><div class="icon"><i class="fas fa-heart"></i></div><span>0</span></div>
+    <div class="tt-action-btn"><div class="icon"><i class="fas fa-comment"></i></div><span>0</span></div>
+    <div class="tt-action-btn"><div class="icon"><i class="fas fa-share"></i></div><span>Share</span></div>
+    <div class="tt-action-btn"><div class="icon"><i class="fas fa-bookmark"></i></div><span>Save</span></div>
+  </div>
+  <div class="tt-info-bottom">
+    <div class="tt-user"><div class="tt-user-avatar" style="background:linear-gradient(135deg,var(--accent1),var(--accent2))">${currentUser.initials||'ME'}</div><div><strong>@you</strong><span>just now</span></div></div>
+    <p class="tt-caption">${input.files[0].name.replace(/\.[^.]+$/,'')} 🎬 #KaziLink #Skills</p>
+    <div class="tt-sound"><div class="tt-sound-disc">🎵</div><span>Original audio</span></div>
+  </div>`;
+  feed.insertBefore(w,feed.children[1]);
+  showToast('Video uploaded! 🎬');
+}
+</script>
+</body>
+</html>
